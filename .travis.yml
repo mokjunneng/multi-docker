@@ -6,10 +6,17 @@ before_install:
   - docker build -t mokjunneng/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-  - docker run mokjunneng/react-test npm test -- --coverage
+  - docker run -e CI=true mokjunneng/react-test npm test
 
 after_success:
   - docker build -t mokjunneng/multi-client ./client
   - docker build -t mokjunneng/multi-nginx ./nginx
   - docker build -t mokjunneng/multi-server ./server
   - docker build -t mokjunneng/multi-worker ./worker
+  # Log into docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take images and push to docker hub
+  - docker push mokjunneng/multi-client
+  - docker push mokjunneng/multi-nginx
+  - docker push mokjunneng/multi-server
+  - docker push mokjunneng/multi-worker
